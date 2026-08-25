@@ -488,8 +488,8 @@ export const SettingsView: React.FC = () => {
                   <td className="py-2.5 px-4 text-slate-600">{log.details}</td>
                </tr>
         ))
+      }          
     </tbody>
   </table>
 </div>
-)}
 export default SettingView
