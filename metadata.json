@@ -1,0 +1,6 @@
+{
+  "name": "KiotFix - Quản Lý Sửa Chữa Máy Tính & Kho Linh Kiện",
+  "description": "Hệ thống quản lý chuyên nghiệp cho cửa hàng sửa chữa máy tính, laptop, VGA, mainboard, kho linh kiện, bán hàng, công nợ và bảo hành.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
