@@ -7,13 +7,9 @@ import {
   Database,
   History,
   Save,
-  Plus,
   Trash2,
-  Wifi,
   Download,
   Upload,
-  CheckCircle2,
-  RotateCcw
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { PrinterConfig } from '../types';
@@ -55,6 +51,15 @@ export const SettingsView: React.FC = () => {
   const [testResult, setTestResult] = useState<string | null>(null);
   const [isZoomed, setIsZoomed] = useState(false);
 
+  const normalizedBankName = (settings.bankName || '').trim().toUpperCase();
+  const normalizedAccount = (settings.bankAccount || '').trim();
+  const normalizedAccountName = (settings.bankAccountName || '').trim().toUpperCase();
+
+  const qrUrl =
+    normalizedBankName && normalizedAccount && normalizedAccountName
+      ? `https://img.vietqr.io/image/${encodeURIComponent(normalizedBankName)}-${encodeURIComponent(normalizedAccount)}-compact2.png?accountName=${encodeURIComponent(normalizedAccountName)}`
+      : '';
+
   const handleSaveStore = (e: React.FormEvent) => {
     e.preventDefault();
     updateSettings({
@@ -81,12 +86,25 @@ export const SettingsView: React.FC = () => {
 
   const handleAddPrinter = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newPrinterName || !newPrinterIp) return;
+    const name = newPrinterName.trim();
+    const ip = newPrinterIp.trim();
+    const port = Number(newPrinterPort);
+
+    if (!name || !ip) {
+      alert('Vui lòng nhập tên và địa chỉ IP máy in.');
+      return;
+    }
+
+    if (!Number.isInteger(port) || port < 1 || port > 65535) {
+      alert('Port máy in phải nằm trong khoảng 1–65535.');
+      return;
+    }
+
     const printer: PrinterConfig = {
       id: `printer-${Date.now()}`,
-      name: newPrinterName.trim(),
-      ipAddress: newPrinterIp.trim(),
-      port: Number(newPrinterPort),
+      name,
+      ipAddress: ip,
+      port,
       type: newPrinterType,
       isDefault: printers.length === 0,
     };
@@ -94,6 +112,7 @@ export const SettingsView: React.FC = () => {
     updatePrinters([...printers, printer]);
     setNewPrinterName('');
     setNewPrinterIp('');
+    setNewPrinterPort(9100);
   };
 
   const handleTestPrinter = async (printer: PrinterConfig) => {
@@ -122,7 +141,7 @@ export const SettingsView: React.FC = () => {
         <div className="mt-4 flex flex-col items-center justify-center">
           <p className="text-xs text-slate-400 mb-1">(Bấm vào ảnh để phóng to quét mã)</p>
           <img 
-            src="/path-to-your-qr.png" 
+            src={qrUrl || '/path-to-your-qr.png'} 
             alt="VietQR" 
             className="w-36 h-36 border border-slate-200 rounded-xl p-2 bg-white cursor-zoom-in hover:scale-105 transition-transform shadow-sm"
             onClick={() => setIsZoomed(true)}
@@ -137,7 +156,7 @@ export const SettingsView: React.FC = () => {
           >
             <div className="relative p-4 bg-white rounded-2xl max-w-[90vw] max-h-[90vh] shadow-2xl flex flex-col items-center">
               <img 
-                src="/path-to-your-qr.png" 
+                src={qrUrl || '/path-to-your-qr.png'} 
                 alt="VietQR Zoomed" 
                 className="max-w-[400px] w-full h-auto object-contain p-2"
               />
@@ -386,13 +405,20 @@ export const SettingsView: React.FC = () => {
                     <td className="py-3 px-4 text-center">
                       <div className="flex items-center justify-center gap-2">
                         <button
+                          type="button"
                           onClick={() => handleTestPrinter(pr)}
                           className="px-2.5 py-1 bg-slate-100 hover:bg-blue-100 hover:text-blue-700 rounded-lg font-bold text-[11px] cursor-pointer"
                         >
                           In thử (ESC/POS)
                         </button>
                         <button
-                          onClick={() => updatePrinters(printers.filter((item) => item.id !== pr.id))}
+                          onClick={() => {
+                            const remaining = printers.filter((item) => item.id !== pr.id);
+                            if (pr.isDefault && remaining.length > 0) {
+                              remaining[0] = { ...remaining[0], isDefault: true };
+                            }
+                            updatePrinters(remaining);
+                          }}
                           className="p-1 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -500,4 +526,4 @@ export const SettingsView: React.FC = () => {
     );
   };
           
-export default SettingsView
+export default SettingsView;
