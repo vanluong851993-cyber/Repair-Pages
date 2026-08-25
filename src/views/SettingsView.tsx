@@ -493,7 +493,6 @@ export const SettingsView: React.FC = () => {
     </table>
   </div>
 )}
-</div>
 
     </div>
   );
