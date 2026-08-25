@@ -110,35 +110,37 @@ export const SettingsView: React.FC = () => {
             <SettingsIcon className="w-5 h-5 text-slate-700" />
             <span>Cài Đặt Hệ Thống Cửa Hàng</span>
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Cấu hình hóa đơn, tài khoản ngân hàng tạo mã VietQR, máy in nhiệt WiFi/LAN và sao lưu dữ liệu
-{/* 1. Ảnh QR hiển thị trên giao diện (Click vào để phóng to) */}
-      <div className="mt-4 flex flex-col items-center justify-center">
-        <p className="text-xs text-slate-400 mb-1">(Bấm vào ảnh để phóng to quét mã)</p>
-        <img 
-          src="/path-to-your-qr.png" 
-          alt="VietQR" 
-          className="w-36 h-36 border border-slate-200 rounded-xl p-2 bg-white cursor-zoom-in hover:scale-105 transition-transform shadow-sm"
-          onClick={() => setIsZoomed(true)}
-        />
-      </div>
+        <p className="text-xs text-slate-500 mt-0.5">
+          Cấu hình hóa đơn, tài khoản ngân hàng tạo mã VietQR, máy in nhiệt WIFI/LAN và sao lưu dữ liệu
+        </p>
 
-      {/* 2. Giao diện Modal phóng to khi isZoomed = true */}
-      {isZoomed && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm cursor-zoom-out"
-          onClick={() => setIsZoomed(false)}
-        >
-          <div className="relative p-4 bg-white rounded-2xl max-w-[90vw] max-h-[90vh] shadow-2xl flex flex-col items-center">
-            <img 
-              src="/path-to-your-qr.png" 
-              alt="VietQR Zoomed" 
-              className="max-w-[400px] w-full h-auto object-contain p-2"
-            />
-            <p className="text-sm font-medium text-slate-700 mt-2">Bấm bất kỳ đâu để đóng</p>
-          </div>
+        {/* 1. Ảnh QR hiển thị trên giao diện (Click vào để phóng to) */}
+        <div className="mt-4 flex flex-col items-center justify-center">
+          <p className="text-xs text-slate-400 mb-1">(Bấm vào ảnh để phóng to quét mã)</p>
+          <img 
+            src="/path-to-your-qr.png" 
+            alt="VietQR" 
+            className="w-36 h-36 border border-slate-200 rounded-xl p-2 bg-white cursor-zoom-in hover:scale-105 transition-transform shadow-sm"
+            onClick={() => setIsZoomed(true)}
+          />
         </div>
-      )}
+
+        {/* 2. Giao diện Modal phóng to khi isZoomed = true */}
+        {isZoomed && (
+          <div 
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm cursor-zoom-out"
+            onClick={() => setIsZoomed(false)}
+          >
+            <div className="relative p-4 bg-white rounded-2xl max-w-[90vw] max-h-[90vh] shadow-2xl flex flex-col items-center">
+              <img 
+                src="/path-to-your-qr.png" 
+                alt="VietQR Zoomed" 
+                className="max-w-[400px] w-full h-auto object-contain p-2"
+              />
+              <p className="text-sm font-medium text-slate-700 mt-2">Bấm bất kỳ đâu để đóng</p>
+            </div>
+          </div>
+        )}
       {/* Tabs */}
       <div className="flex items-center gap-1.5 overflow-x-auto bg-white p-1.5 rounded-2xl border border-slate-200 shadow-xs text-xs font-semibold">
         {[
