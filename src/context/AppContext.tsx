@@ -800,7 +800,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     } catch {
       return {
         success: true,
-        message: `Mô phỏng in thành công trên máy in [${printer.name}] qua giao thức ESC/POS mạng LAN (${printer.ip}:${printer.port})!`,
+        message: `Mô phỏng in thành công trên máy in [${printer.name}] qua giao thức ESC/POS mạng LAN (${printer.ipAddress}:${printer.port})!`,
       };
     }
   };
