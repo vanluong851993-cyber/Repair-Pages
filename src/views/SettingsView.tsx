@@ -139,7 +139,6 @@ export const SettingsView: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
       {/* Tabs */}
       <div className="flex items-center gap-1.5 overflow-x-auto bg-white p-1.5 rounded-2xl border border-slate-200 shadow-xs text-xs font-semibold">
         {[
