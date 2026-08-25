@@ -486,12 +486,17 @@ export const SettingsView: React.FC = () => {
                   <td className="py-2.5 px-4 font-bold text-slate-800">{log.userName}</td>
                   <td className="py-2.5 px-4 text-blue-600 font-semibold">{log.action}</td>
                   <td className="py-2.5 px-4 text-slate-600">{log.details}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+               </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </div>
+)}
+</div>
+
     </div>
   );
 };
+
+export default SettingView
