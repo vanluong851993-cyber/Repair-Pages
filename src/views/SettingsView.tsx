@@ -492,4 +492,6 @@ export const SettingsView: React.FC = () => {
     </tbody>
   </table>
 </div>
+      )
+      }
 export default SettingView
