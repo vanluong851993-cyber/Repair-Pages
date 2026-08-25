@@ -20,6 +20,7 @@ export const initialUsers: User[] = [
 export const InitialCustomers: Customer[] = [
   {
    id: 'user_3', username: 'thkhachhang', name: 'Nguyễn Văn A', phone: '000000000' },
+  ];
 export const initialProducts: Product[] = [
   {
     id: 'sp-001',
