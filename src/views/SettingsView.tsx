@@ -112,7 +112,7 @@ export const SettingsView: React.FC = () => {
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
             Cấu hình hóa đơn, tài khoản ngân hàng tạo mã VietQR, máy in nhiệt WiFi/LAN và sao lưu dữ liệu
-     {/* 1. Ảnh QR hiển thị trên giao diện (Click vào để phóng to) */}
+    {/* 1. Ảnh QR hiển thị trên giao diện (Click vào để phóng to) */}
       <div className="mt-4 flex flex-col items-center justify-center">
         <p className="text-xs text-slate-400 mb-1">(Bấm vào ảnh để phóng to quét mã)</p>
         <img 
