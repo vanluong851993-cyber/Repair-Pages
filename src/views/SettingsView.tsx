@@ -168,11 +168,6 @@ export const SettingsView: React.FC = () => {
             );
           })}
         </div>
-
-      </div>
-    </div>
-  );
-};
       {/* Tab: Store Info */}
       {activeTab === 'store' && (
         <form onSubmit={handleSaveStore} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4 text-xs">
