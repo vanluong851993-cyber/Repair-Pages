@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Settings as SettingsIcon,
   Store,
@@ -14,89 +14,115 @@ import {
 import { useApp } from '../context/AppContext';
 import { PrinterConfig } from '../types';
 
-export const SettingsView: React.FC = () => {
+type TabId = 'store' | 'bank' | 'printers' | 'backup' | 'audit';
+
+const inputClass =
+  'w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100';
+
+const SettingsView: React.FC = () => {
   const {
     settings,
     updateSettings,
     printers,
-    addPrinter,
+    updatePrinters,
     testPrinter,
     auditLogs,
-    updatePrinters,
     backupDatabase,
     restoreDatabase,
   } = useApp();
 
-  const [activeTab, setActiveTab] = useState<'store' | 'printers' | 'bank' | 'backup' | 'audit'>('store');
+  const [activeTab, setActiveTab] = useState<TabId>('store');
 
-  // Store form state
-  const [storeName, setStoreName] = useState(settings.storeName);
-  const [phone, setPhone] = useState(settings.phone);
-  const [email, setEmail] = useState(settings.email);
-  const [address, setAddress] = useState(settings.address);
-  const [website, setWebsite] = useState(settings.website || '');
-  const [printHeaderNote, setPrintHeaderNote] = useState(settings.printHeaderNote);
-  const [printFooterNote, setPrintFooterNote] = useState(settings.printFooterNote);
+  const [storeName, setStoreName] = useState(settings.storeName ?? '');
+  const [phone, setPhone] = useState(settings.phone ?? '');
+  const [email, setEmail] = useState(settings.email ?? '');
+  const [address, setAddress] = useState(settings.address ?? '');
+  const [website, setWebsite] = useState(settings.website ?? '');
+  const [printHeaderNote, setPrintHeaderNote] = useState(
+    settings.printHeaderNote ?? '',
+  );
+  const [printFooterNote, setPrintFooterNote] = useState(
+    settings.printFooterNote ?? '',
+  );
 
-  // Bank form state
-  const [bankName, setBankName] = useState(settings.bankName);
-  const [bankAccount, setBankAccount] = useState(settings.bankAccount);
-  const [bankAccountName, setBankAccountName] = useState(settings.bankAccountName);
+  const [bankName, setBankName] = useState(settings.bankName ?? '');
+  const [bankAccount, setBankAccount] = useState(settings.bankAccount ?? '');
+  const [bankAccountName, setBankAccountName] = useState(
+    settings.bankAccountName ?? '',
+  );
 
-  // New printer state
-  const [newPrinterName, setNewPrinterName] = useState('Máy In Hóa Đơn Quầy (K80)');
-  const [newPrinterIp, setNewPrinterIp] = useState('192.168.1.200');
-  const [newPrinterPort, setNewPrinterPort] = useState(9100);
-  const [newPrinterType, setNewPrinterType] = useState<'k80' | 'k58' | 'a4'>('k80');
-  const [testResult, setTestResult] = useState<string | null>(null);
+  const [newPrinterName, setNewPrinterName] = useState(
+    'Máy In Hóa Đơn Quầy (K80)',
+  );
+  const [newPrinterIp, setNewPrinterIp] = useState('');
+  const [newPrinterPort, setNewPrinterPort] = useState('9100');
+  const [newPrinterType, setNewPrinterType] =
+    useState<PrinterConfig['type']>('k80');
+
+  const [testResult, setTestResult] = useState<string>('');
+  const [testingPrinterId, setTestingPrinterId] = useState<string | null>(
+    null,
+  );
   const [isZoomed, setIsZoomed] = useState(false);
 
-  const normalizedBankName = (settings.bankName || '').trim().toUpperCase();
-  const normalizedAccount = (settings.bankAccount || '').trim();
-  const normalizedAccountName = (settings.bankAccountName || '').trim().toUpperCase();
+  const qrUrl = useMemo(() => {
+    const bank = bankName.trim().toUpperCase();
+    const account = bankAccount.trim();
+    const owner = bankAccountName.trim().toUpperCase();
 
-  const qrUrl =
-    normalizedBankName && normalizedAccount && normalizedAccountName
-      ? `https://img.vietqr.io/image/${encodeURIComponent(normalizedBankName)}-${encodeURIComponent(normalizedAccount)}-compact2.png?accountName=${encodeURIComponent(normalizedAccountName)}`
+    if (!bank || !account) return '';
+
+    const query = owner
+      ? `?accountName=${encodeURIComponent(owner)}`
       : '';
 
-  const handleSaveStore = (e: React.FormEvent) => {
-    e.preventDefault();
+    return `https://img.vietqr.io/image/${encodeURIComponent(
+      bank,
+    )}-${encodeURIComponent(account)}-compact2.png${query}`;
+  }, [bankName, bankAccount, bankAccountName]);
+
+  const saveStore = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
     updateSettings({
-      storeName,
-      phone,
-      email,
-      address,
-      website,
-      printHeaderNote,
-      printFooterNote,
+      storeName: storeName.trim(),
+      phone: phone.trim(),
+      email: email.trim(),
+      address: address.trim(),
+      website: website.trim(),
+      printHeaderNote: printHeaderNote.trim(),
+      printFooterNote: printFooterNote.trim(),
     });
-    alert('Đã cập nhật thông tin cửa hàng thành công!');
+
+    window.alert('Đã lưu thông tin cửa hàng.');
   };
 
-  const handleSaveBank = (e: React.FormEvent) => {
-    e.preventDefault();
+  const saveBank = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
     updateSettings({
-      bankName,
-      bankAccount,
-      bankAccountName,
+      bankName: bankName.trim().toUpperCase(),
+      bankAccount: bankAccount.trim(),
+      bankAccountName: bankAccountName.trim().toUpperCase(),
     });
-    alert('Đã cập nhật thông tin tài khoản VietQR thành công!');
+
+    window.alert('Đã lưu thông tin VietQR.');
   };
 
-  const handleAddPrinter = (e: React.FormEvent) => {
-    e.preventDefault();
+  const addPrinter = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
     const name = newPrinterName.trim();
     const ip = newPrinterIp.trim();
     const port = Number(newPrinterPort);
 
     if (!name || !ip) {
-      alert('Vui lòng nhập tên và địa chỉ IP máy in.');
+      window.alert('Vui lòng nhập tên và IP máy in.');
       return;
     }
 
     if (!Number.isInteger(port) || port < 1 || port > 65535) {
-      alert('Port máy in phải nằm trong khoảng 1–65535.');
+      window.alert('Port phải là số nguyên từ 1 đến 65535.');
       return;
     }
 
@@ -110,420 +136,607 @@ export const SettingsView: React.FC = () => {
     };
 
     updatePrinters([...printers, printer]);
-    setNewPrinterName('');
+
+    setNewPrinterName('Máy In Hóa Đơn Quầy (K80)');
     setNewPrinterIp('');
-    setNewPrinterPort(9100);
+    setNewPrinterPort('9100');
+    setNewPrinterType('k80');
+    setTestResult('');
   };
 
-  const handleTestPrinter = async (printer: PrinterConfig) => {
-    setTestResult('Đang gửi tín hiệu in test ESC/POS...');
+  const removePrinter = (printer: PrinterConfig) => {
+    const remaining = printers.filter((item) => item.id !== printer.id);
+
+    if (printer.isDefault && remaining.length > 0) {
+      updatePrinters(
+        remaining.map((item, index) => ({
+          ...item,
+          isDefault: index === 0,
+        })),
+      );
+      return;
+    }
+
+    updatePrinters(remaining);
+  };
+
+  const runPrinterTest = async (printer: PrinterConfig) => {
+    setTestingPrinterId(printer.id);
+    setTestResult('');
+
     try {
-      const res = await testPrinter(printer);
-      setTestResult(`✓ ${res.message || 'Thử nghiệm kết nối thành công!'}`);
-    } catch {
-      setTestResult('✓ Đã gửi lệnh in mô phỏng (ESC/POS socket kết nối thành công)');
+      const result = await testPrinter(printer);
+
+      setTestResult(
+        result.success
+          ? `✓ ${result.message || 'Kiểm tra máy in thành công.'}`
+          : `✕ ${result.message || 'Kiểm tra máy in thất bại.'}`,
+      );
+    } catch (error) {
+      setTestResult(
+        `✕ ${
+          error instanceof Error
+            ? error.message
+            : 'Không thể kiểm tra máy in.'
+        }`,
+      );
+    } finally {
+      setTestingPrinterId(null);
     }
   };
 
+  const importBackup = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      const text = typeof reader.result === 'string' ? reader.result : '';
+
+      if (!text) {
+        window.alert('Không đọc được file sao lưu.');
+        return;
+      }
+
+      const restored = restoreDatabase(text);
+
+      window.alert(
+        restored
+          ? 'Khôi phục dữ liệu thành công.'
+          : 'File sao lưu không đúng định dạng.',
+      );
+
+      event.target.value = '';
+    };
+
+    reader.onerror = () => {
+      window.alert('Không thể đọc file sao lưu.');
+      event.target.value = '';
+    };
+
+    reader.readAsText(file, 'utf-8');
+  };
+
+  const tabs: Array<{
+    id: TabId;
+    label: string;
+    icon: React.ElementType;
+  }> = [
+    { id: 'store', label: 'Thông tin cửa hàng', icon: Store },
+    { id: 'bank', label: 'Tài khoản VietQR', icon: CreditCard },
+    { id: 'printers', label: 'Máy in WiFi/LAN', icon: Printer },
+    { id: 'backup', label: 'Sao lưu dữ liệu', icon: Database },
+    { id: 'audit', label: 'Nhật ký hệ thống', icon: History },
+  ];
+
   return (
     <div className="space-y-5 pb-12">
-      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-            <SettingsIcon className="w-5 h-5 text-slate-700" />
-            <span>Cài Đặt Hệ Thống Cửa Hàng</span>
-          </h1>
-        <p className="text-xs text-slate-500 mt-0.5">
-          Cấu hình hóa đơn, tài khoản ngân hàng tạo mã VietQR, máy in nhiệt WIFI/LAN và sao lưu dữ liệu
-        </p>
-
-        {/* 1. Ảnh QR hiển thị trên giao diện (Click vào để phóng to) */}
-        <div className="mt-4 flex flex-col items-center justify-center">
-          <p className="text-xs text-slate-400 mb-1">(Bấm vào ảnh để phóng to quét mã)</p>
-          <img 
-            src={qrUrl || '/path-to-your-qr.png'} 
-            alt="VietQR" 
-            className="w-36 h-36 border border-slate-200 rounded-xl p-2 bg-white cursor-zoom-in hover:scale-105 transition-transform shadow-sm"
-            onClick={() => setIsZoomed(true)}
-          />
-        </div>
-
-        {/* 2. Giao diện Modal phóng to khi isZoomed = true */}
-        {isZoomed && (
-          <div 
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm cursor-zoom-out"
-            onClick={() => setIsZoomed(false)}
-          >
-            <div className="relative p-4 bg-white rounded-2xl max-w-[90vw] max-h-[90vh] shadow-2xl flex flex-col items-center">
-              <img 
-                src={qrUrl || '/path-to-your-qr.png'} 
-                alt="VietQR Zoomed" 
-                className="max-w-[400px] w-full h-auto object-contain p-2"
-              />
-              <p className="text-sm font-medium text-slate-700 mt-2">Bấm bất kỳ đâu để đóng</p>
-            </div>
+      <section className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <div className="flex items-start gap-3">
+          <SettingsIcon className="w-5 h-5 mt-0.5 text-slate-700" />
+          <div>
+            <h1 className="text-lg font-bold text-slate-800">
+              Cài đặt hệ thống cửa hàng
+            </h1>
+            <p className="text-xs text-slate-500 mt-1">
+              Cấu hình cửa hàng, VietQR, máy in nhiệt WiFi/LAN, sao lưu dữ liệu
+              và nhật ký hệ thống.
+            </p>
           </div>
-        )}
-
-        {/* 3. Phần Tabs */}
-        <div className="flex items-center gap-1.5 overflow-x-auto bg-white p-1.5 rounded-2xl border border-slate-200 shadow-xs text-xs font-semibold mt-4">
-          {[
-            { id: 'store', label: 'Thông tin cửa hàng', icon: Store },
-            { id: 'bank', label: 'Tài khoản VietQR', icon: CreditCard },
-            { id: 'printers', label: 'Máy in WIFI/LAN', icon: Printer },
-            { id: 'backup', label: 'Sao lưu dữ liệu', icon: Database },
-            { id: 'audit', label: 'Nhật ký hệ thống', icon: History },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all cursor-pointer select-none ${
-                  activeTab === tab.id
-                    ? 'bg-blue-600 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
         </div>
-      {/* Tab: Store Info */}
-      {activeTab === 'store' && (
-        <form onSubmit={handleSaveStore} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4 text-xs">
-          <h3 className="font-bold text-sm text-slate-800 border-b border-slate-100 pb-2">
-            Thông tin thương hiệu & Tiêu đề hóa đơn
-          </h3>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="font-semibold text-slate-700 block mb-1">Tên cửa hàng / Trung tâm:</label>
+        <div className="mt-5 flex flex-col items-center">
+          <p className="text-xs text-slate-400 mb-2">
+            {qrUrl
+              ? 'Bấm vào mã QR để phóng to'
+              : 'Nhập thông tin ngân hàng để tạo mã VietQR'}
+          </p>
+
+          <button
+            type="button"
+            onClick={() => qrUrl && setIsZoomed(true)}
+            disabled={!qrUrl}
+            className="disabled:cursor-not-allowed"
+          >
+            {qrUrl ? (
+              <img
+                src={qrUrl}
+                alt="VietQR"
+                className="w-40 h-40 object-contain border border-slate-200 rounded-xl p-2 bg-white shadow-sm"
+              />
+            ) : (
+              <div className="w-40 h-40 border border-dashed border-slate-300 rounded-xl flex items-center justify-center text-center text-xs text-slate-400 p-4">
+                Chưa có dữ liệu VietQR
+              </div>
+            )}
+          </button>
+        </div>
+      </section>
+
+      {isZoomed && qrUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+          onClick={() => setIsZoomed(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="bg-white rounded-2xl p-5 shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <img
+              src={qrUrl}
+              alt="VietQR phóng to"
+              className="max-w-[80vw] max-h-[75vh] object-contain"
+            />
+            <button
+              type="button"
+              onClick={() => setIsZoomed(false)}
+              className="w-full mt-4 py-2 rounded-xl bg-slate-800 text-white font-semibold"
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm flex gap-1 overflow-x-auto">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const active = activeTab === tab.id;
+
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 whitespace-nowrap px-4 py-2.5 rounded-xl text-xs font-semibold transition-colors ${
+                active
+                  ? 'bg-blue-600 text-white'
+                  : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {activeTab === 'store' && (
+        <form
+          onSubmit={saveStore}
+          className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4"
+        >
+          <h2 className="font-bold text-slate-800 border-b border-slate-100 pb-3">
+            Thông tin cửa hàng
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field label="Tên cửa hàng / Trung tâm">
               <input
-                type="text"
                 value={storeName}
                 onChange={(e) => setStoreName(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-bold text-slate-800"
+                className={inputClass}
+                required
               />
-            </div>
+            </Field>
 
-            <div>
-              <label className="font-semibold text-slate-700 block mb-1">Hotline / Zalo hỗ trợ:</label>
+            <Field label="Hotline / Zalo">
               <input
-                type="text"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-semibold"
+                className={inputClass}
               />
-            </div>
+            </Field>
 
-            <div>
-              <label className="font-semibold text-slate-700 block mb-1">Email liên hệ:</label>
+            <Field label="Email">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg"
+                className={inputClass}
               />
-            </div>
+            </Field>
 
-            <div>
-              <label className="font-semibold text-slate-700 block mb-1">Địa chỉ cửa hàng:</label>
+            <Field label="Website">
               <input
-                type="text"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+                className={inputClass}
+                placeholder="https://..."
               />
+            </Field>
+
+            <div className="md:col-span-2">
+              <Field label="Địa chỉ">
+                <input
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  className={inputClass}
+                />
+              </Field>
             </div>
 
-            <div className="sm:col-span-2">
-              <label className="font-semibold text-slate-700 block mb-1">Lời chào đầu hóa đơn (Header Note):</label>
-              <input
-                type="text"
-                value={printHeaderNote}
-                onChange={(e) => setPrintHeaderNote(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg"
-              />
+            <div className="md:col-span-2">
+              <Field label="Lời chào đầu hóa đơn">
+                <input
+                  value={printHeaderNote}
+                  onChange={(e) => setPrintHeaderNote(e.target.value)}
+                  className={inputClass}
+                />
+              </Field>
             </div>
 
-            <div className="sm:col-span-2">
-              <label className="font-semibold text-slate-700 block mb-1">Quy định & Lưu ý chân trang hóa đơn (Footer Note):</label>
-              <textarea
-                rows={3}
-                value={printFooterNote}
-                onChange={(e) => setPrintFooterNote(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg leading-relaxed"
-              />
+            <div className="md:col-span-2">
+              <Field label="Ghi chú chân trang hóa đơn">
+                <textarea
+                  rows={4}
+                  value={printFooterNote}
+                  onChange={(e) => setPrintFooterNote(e.target.value)}
+                  className={`${inputClass} resize-y`}
+                />
+              </Field>
             </div>
           </div>
 
           <button
             type="submit"
-            className="flex items-center gap-1.5 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700"
           >
             <Save className="w-4 h-4" />
-            <span>Lưu thông tin cửa hàng</span>
+            Lưu thông tin
           </button>
         </form>
       )}
 
-      {/* Tab: Bank VietQR */}
       {activeTab === 'bank' && (
-        <form onSubmit={handleSaveBank} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4 text-xs">
-          <h3 className="font-bold text-sm text-slate-800 border-b border-slate-100 pb-2">
-            Cấu hình tài khoản nhận tiền tạo mã VietQR động
-          </h3>
+        <form
+          onSubmit={saveBank}
+          className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4"
+        >
+          <h2 className="font-bold text-slate-800 border-b border-slate-100 pb-3">
+            Tài khoản VietQR
+          </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="font-semibold text-slate-700 block mb-1">Ngân hàng thụ hưởng:</label>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Field label="Ngân hàng">
               <input
-                type="text"
-                placeholder="vd: MBBANK, VIETCOMBANK, TECHCOMBANK, ACB, VPBANK..."
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-bold"
+                className={inputClass}
+                placeholder="MBBANK, ACB, VCB..."
+                required
               />
-            </div>
+            </Field>
 
-            <div>
-              <label className="font-semibold text-slate-700 block mb-1">Số tài khoản ngân hàng:</label>
+            <Field label="Số tài khoản">
               <input
-                type="text"
                 value={bankAccount}
                 onChange={(e) => setBankAccount(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-mono font-black text-blue-700"
+                className={`${inputClass} font-mono`}
+                required
               />
-            </div>
+            </Field>
 
-            <div>
-              <label className="font-semibold text-slate-700 block mb-1">Tên chủ tài khoản (In hoa không dấu):</label>
+            <Field label="Tên chủ tài khoản">
               <input
-                type="text"
                 value={bankAccountName}
                 onChange={(e) => setBankAccountName(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg uppercase font-bold"
+                className={`${inputClass} uppercase`}
+                required
               />
-            </div>
+            </Field>
+          </div>
+
+          <div className="p-3 rounded-xl bg-blue-50 text-blue-800 text-xs">
+            Sau khi lưu, mã VietQR sẽ được tạo tự động từ thông tin trên.
           </div>
 
           <button
             type="submit"
-            className="flex items-center gap-1.5 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700"
           >
             <Save className="w-4 h-4" />
-            <span>Lưu tài khoản VietQR</span>
+            Lưu tài khoản VietQR
           </button>
         </form>
       )}
 
-      {/* Tab: WiFi/LAN Printers */}
       {activeTab === 'printers' && (
-        <div className="space-y-5 text-xs">
-          {/* Add Printer */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-            <h3 className="font-bold text-sm text-slate-800 border-b border-slate-100 pb-2">
-              Thêm Máy In Nhiệt Mạng (ESC/POS WiFi / LAN Ethernet)
-            </h3>
+        <div className="space-y-5">
+          <section className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <h2 className="font-bold text-slate-800 border-b border-slate-100 pb-3 mb-4">
+              Máy in nhiệt WiFi / LAN
+            </h2>
 
-            <form onSubmit={handleAddPrinter} className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-              <div>
-                <label className="font-semibold text-slate-700 block mb-1">Tên máy in:</label>
+            <form
+              onSubmit={addPrinter}
+              className="grid grid-cols-1 md:grid-cols-5 gap-3"
+            >
+              <Field label="Tên máy in">
                 <input
-                  type="text"
-                  placeholder="vd: Máy In Quầy K80"
                   value={newPrinterName}
                   onChange={(e) => setNewPrinterName(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg"
+                  className={inputClass}
+                  required
                 />
-              </div>
+              </Field>
 
-              <div>
-                <label className="font-semibold text-slate-700 block mb-1">Địa chỉ IP máy in trong mạng LAN:</label>
+              <Field label="Địa chỉ IP">
                 <input
-                  type="text"
-                  placeholder="vd: 192.168.1.200"
                   value={newPrinterIp}
                   onChange={(e) => setNewPrinterIp(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-mono font-bold"
+                  className={`${inputClass} font-mono`}
+                  placeholder="192.168.1.200"
+                  required
                 />
-              </div>
+              </Field>
 
-              <div>
-                <label className="font-semibold text-slate-700 block mb-1">Cổng Port Socket (Mặc định 9100):</label>
+              <Field label="Port">
                 <input
                   type="number"
+                  min={1}
+                  max={65535}
                   value={newPrinterPort}
-                  onChange={(e) => setNewPrinterPort(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-mono"
+                  onChange={(e) => setNewPrinterPort(e.target.value)}
+                  className={`${inputClass} font-mono`}
+                  required
                 />
-              </div>
+              </Field>
+
+              <Field label="Khổ giấy">
+                <select
+                  value={newPrinterType}
+                  onChange={(e) =>
+                    setNewPrinterType(
+                      e.target.value as PrinterConfig['type'],
+                    )
+                  }
+                  className={inputClass}
+                >
+                  <option value="k80">K80</option>
+                  <option value="k58">K58</option>
+                  <option value="a4">A4</option>
+                </select>
+              </Field>
 
               <div className="flex items-end">
                 <button
                   type="submit"
-                  className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-xs cursor-pointer"
+                  className="w-full py-2.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700"
                 >
                   + Thêm máy in
                 </button>
               </div>
             </form>
-          </div>
+          </section>
 
-          {/* Printer List */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-semibold">
-                  <th className="py-3 px-4">Tên máy in</th>
-                  <th className="py-3 px-4">Địa chỉ IP</th>
-                  <th className="py-3 px-4">Cổng</th>
-                  <th className="py-3 px-4">Loại khổ giấy</th>
-                  <th className="py-3 px-4 text-center">Mặc định</th>
-                  <th className="py-3 px-4 text-center">Thao tác</th>
+          <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+            <table className="w-full min-w-[760px] text-sm">
+              <thead className="bg-slate-50 border-b border-slate-200">
+                <tr>
+                  <th className="text-left px-4 py-3">Tên máy in</th>
+                  <th className="text-left px-4 py-3">IP</th>
+                  <th className="text-left px-4 py-3">Port</th>
+                  <th className="text-left px-4 py-3">Loại</th>
+                  <th className="text-center px-4 py-3">Mặc định</th>
+                  <th className="text-center px-4 py-3">Thao tác</th>
                 </tr>
               </thead>
+
               <tbody className="divide-y divide-slate-100">
-                {printers.map((pr) => (
-                  <tr key={pr.id}>
-                    <td className="py-3 px-4 font-bold text-slate-800">{pr.name}</td>
-                    <td className="py-3 px-4 font-mono text-blue-600 font-semibold">{pr.ipAddress}</td>
-                    <td className="py-3 px-4 font-mono text-slate-600">{pr.port}</td>
-                    <td className="py-3 px-4 uppercase font-semibold text-slate-700">{pr.type}</td>
-                    <td className="py-3 px-4 text-center">
-                      {pr.isDefault ? (
-                        <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold text-[10px]">
-                          Mặc định
-                        </span>
-                      ) : (
-                        <span className="text-slate-400">---</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleTestPrinter(pr)}
-                          className="px-2.5 py-1 bg-slate-100 hover:bg-blue-100 hover:text-blue-700 rounded-lg font-bold text-[11px] cursor-pointer"
-                        >
-                          In thử (ESC/POS)
-                        </button>
-                        <button
-                          onClick={() => {
-                            const remaining = printers.filter((item) => item.id !== pr.id);
-                            if (pr.isDefault && remaining.length > 0) {
-                              remaining[0] = { ...remaining[0], isDefault: true };
-                            }
-                            updatePrinters(remaining);
-                          }}
-                          className="p-1 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                {printers.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="text-center py-10 text-slate-400"
+                    >
+                      Chưa có máy in.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  printers.map((printer) => (
+                    <tr key={printer.id}>
+                      <td className="px-4 py-3 font-semibold">
+                        {printer.name}
+                      </td>
+                      <td className="px-4 py-3 font-mono text-blue-600">
+                        {printer.ipAddress}
+                      </td>
+                      <td className="px-4 py-3 font-mono">
+                        {printer.port}
+                      </td>
+                      <td className="px-4 py-3 uppercase">{printer.type}</td>
+                      <td className="px-4 py-3 text-center">
+                        {printer.isDefault ? (
+                          <span className="inline-block px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold">
+                            Mặc định
+                          </span>
+                        ) : (
+                          '-'
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex justify-center gap-2">
+                          <button
+                            type="button"
+                            disabled={testingPrinterId === printer.id}
+                            onClick={() => runPrinterTest(printer)}
+                            className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-100 disabled:opacity-50 text-xs font-semibold"
+                          >
+                            {testingPrinterId === printer.id
+                              ? 'Đang test...'
+                              : 'In thử'}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (
+                                window.confirm(
+                                  `Xóa máy in "${printer.name}"?`,
+                                )
+                              ) {
+                                removePrinter(printer);
+                              }
+                            }}
+                            className="p-2 rounded-lg text-red-500 hover:bg-red-50"
+                            aria-label={`Xóa máy in ${printer.name}`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
-          </div>
+          </section>
 
           {testResult && (
-            <div className="p-3 bg-emerald-50 text-emerald-800 font-bold rounded-xl border border-emerald-200 animate-in fade-in text-center">
+            <div className="p-3 rounded-xl border border-slate-200 bg-white text-sm font-semibold">
               {testResult}
             </div>
           )}
         </div>
       )}
 
-      {/* Tab: Backup & Restore */}
       {activeTab === 'backup' && (
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4 text-xs">
-          <h3 className="font-bold text-sm text-slate-800 border-b border-slate-100 pb-2">
-            Sao Lưu & Phục Hồi Toàn Bộ Cơ Sở Dữ Liệu
-          </h3>
+        <section className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <h2 className="font-bold text-slate-800 border-b border-slate-100 pb-3 mb-4">
+            Sao lưu và phục hồi dữ liệu
+          </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl space-y-2">
-              <h4 className="font-bold text-blue-900 text-sm">Xuất file sao lưu dự phòng (JSON)</h4>
-              <p className="text-blue-700 text-xs">
-                Tải xuống toàn bộ hồ sơ sửa chữa, kho linh kiện, danh bạ khách hàng và công nợ để lưu giữ an toàn.
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200">
+              <h3 className="font-bold text-blue-900">
+                Sao lưu cơ sở dữ liệu
+              </h3>
+              <p className="text-sm text-blue-700 mt-1 mb-4">
+                Xuất dữ liệu cửa hàng ra file JSON.
               </p>
+
               <button
+                type="button"
                 onClick={backupDatabase}
-                className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-xs transition-colors cursor-pointer mt-2"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700"
               >
                 <Download className="w-4 h-4" />
-                <span>Tải file sao lưu (.JSON)</span>
+                Tải file sao lưu
               </button>
             </div>
 
-            <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl space-y-2">
-              <h4 className="font-bold text-amber-900 text-sm">Khôi phục dữ liệu từ file</h4>
-              <p className="text-amber-700 text-xs">
-                Tải lên tệp sao lưu JSON đã xuất trước đó để khôi phục trạng thái dữ liệu cửa hàng.
+            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200">
+              <h3 className="font-bold text-amber-900">
+                Phục hồi cơ sở dữ liệu
+              </h3>
+              <p className="text-sm text-amber-700 mt-1 mb-4">
+                Chọn file JSON đã sao lưu trước đó.
               </p>
-              <label className="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl shadow-xs transition-colors cursor-pointer mt-2">
+
+              <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-600 text-white font-semibold cursor-pointer hover:bg-amber-700">
                 <Upload className="w-4 h-4" />
-                <span>Chọn file phục hồi</span>
+                Chọn file JSON
                 <input
                   type="file"
-                  accept=".json"
+                  accept=".json,application/json"
                   className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                      const content = ev.target?.result as string;
-                      if (restoreDatabase(content)) {
-                        alert('Khôi phục dữ liệu thành công!');
-                      } else {
-                        alert('File dữ liệu không đúng định dạng!');
-                      }
-                    };
-                    reader.readAsText(file);
-                  }}
+                  onChange={importBackup}
                 />
               </label>
             </div>
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Tab: Audit Logs */}
       {activeTab === 'audit' && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden text-xs">
-          <div className="p-4 bg-slate-50 border-b border-slate-200 font-bold text-slate-700">
-            Nhật ký hoạt động hệ thống ({auditLogs.length} sự kiện)
+        <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+          <div className="p-4 bg-slate-50 border-b border-slate-200 font-bold">
+            Nhật ký hệ thống ({auditLogs.length})
           </div>
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b border-slate-200 text-slate-500 uppercase font-semibold">
-                <th className="py-2.5 px-4">Thời gian</th>
-                <th className="py-2.5 px-4">Người dùng</th>
-                <th className="py-2.5 px-4">Hành động</th>
-                <th className="py-2.5 px-4">Chi tiết</th>
+
+          <table className="w-full min-w-[720px] text-sm">
+            <thead className="border-b border-slate-200">
+              <tr>
+                <th className="px-4 py-3 text-left">Thời gian</th>
+                <th className="px-4 py-3 text-left">Người dùng</th>
+                <th className="px-4 py-3 text-left">Hành động</th>
+                <th className="px-4 py-3 text-left">Chi tiết</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
-              {auditLogs.slice(0, 20).map((log) => (
-                <tr key={log.id} className="hover:bg-slate-50">
-                  <td className="py-2.5 px-4 text-slate-500">{new Date(log.timestamp).toLocaleTimeString()}</td>
-                  <td className="py-2.5 px-4 font-bold text-slate-800">{log.userName}</td>
-                  <td className="py-2.5 px-4 text-blue-600 font-semibold">{log.action}</td>
-                  <td className="py-2.5 px-4 text-slate-600">{log.details}</td>
-               </tr>
-        ))
-      }          
-    </tbody>
-  </table>
-</div>
-</div>
-    );
-  };
-          
+
+            <tbody className="divide-y divide-slate-100">
+              {auditLogs.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="px-4 py-10 text-center text-slate-400"
+                  >
+                    Chưa có nhật ký.
+                  </td>
+                </tr>
+              ) : (
+                auditLogs.slice(0, 50).map((log) => (
+                  <tr key={log.id} className="hover:bg-slate-50">
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      {new Date(log.timestamp).toLocaleString('vi-VN')}
+                    </td>
+                    <td className="px-4 py-3 font-semibold">
+                      {log.userName}
+                    </td>
+                    <td className="px-4 py-3 text-blue-600 font-semibold">
+                      {log.action}
+                    </td>
+                    <td className="px-4 py-3 text-slate-600">
+                      {log.details}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </section>
+      )}
+    </div>
+  );
+};
+
+interface FieldProps {
+  label: string;
+  children: React.ReactNode;
+}
+
+const Field: React.FC<FieldProps> = ({ label, children }) => (
+  <div>
+    <label className="block mb-1.5 text-xs font-semibold text-slate-700">
+      {label}
+    </label>
+    {children}
+  </div>
+);
+
 export default SettingsView;
