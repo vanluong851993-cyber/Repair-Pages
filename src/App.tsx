@@ -15,7 +15,7 @@ import { WarrantiesView } from './views/WarrantiesView';
 import { TechniciansView } from './views/TechniciansView';
 import { CustomersView } from './views/CustomersView';
 import { ReportsView } from './views/ReportsView';
-import { SettingsView } from './views/SettingsView';
+import  SettingsView  from './views/SettingsView';
 import { RepairDetailModal } from './components/RepairDetailModal';
 import { NewRepairModal } from './components/NewRepairModal';
 import { PrintModal } from './components/PrintModal';
