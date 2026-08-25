@@ -14,13 +14,9 @@ import {
 } from '../types';
 
 export const initialUsers: User[] = [
-  { id: 'usr-1', username: 'admin', name: 'Nguyễn Quản Trị (Admin)', role: 'admin', phone: '0988111222' },
-  { id: 'usr-2', username: 'tech_hai', name: 'Nguyễn Văn Hải (KTV Trưởng)', role: 'technician', phone: '0912333444' },
-  { id: 'usr-3', username: 'tech_tuan', name: 'Trần Minh Tuấn (KTV Phần Cứng)', role: 'technician', phone: '0977888999' },
-  { id: 'usr-4', username: 'tech_nam', name: 'Lê Hoàng Nam (KTV VGA/Chipset)', role: 'technician', phone: '0933555777' },
-  { id: 'usr-5', username: 'cashier_mai', name: 'Phạm Tuyết Mai (Thu Ngân)', role: 'cashier', phone: '0966222333' },
-  { id: 'usr-6', username: 'kho_dung', name: 'Vũ Quốc Dũng (Quản Lý Kho)', role: 'warehouse', phone: '0944111888' },
-];
+  { id: 'usr-1', username: 'admin', name: 'Nguyễn Văn Lượng (Admin)', role: 'admin', phone: '0789324445' },
+    { id: 'usr-5', username: 'cashier_mai', name: 'Ngô Cao Thuỷ Nguyên (Thu Ngân)', role: 'cashier', phone: '0981005162' },
+  ];
 
 export const initialCustomers: Customer[] = [
   {
