@@ -21,6 +21,12 @@ export const initialCustomers: Customer[] = [
   {
    id: 'user_3', username: 'thkhachhang', name: 'Nguyễn Văn A', phone: '000000000' },
   ];
+export const initialSuppliers: Supplier[] = [
+  {
+    id: 'ncc-001',
+    name: 'Tân Phát Electronic IC & Chipset',
+  }
+];
 export const initialProducts: Product[] = [
   {
     id: 'sp-001',
