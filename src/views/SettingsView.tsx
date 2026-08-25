@@ -141,33 +141,38 @@ export const SettingsView: React.FC = () => {
             </div>
           </div>
         )}
-      {/* Tabs */}
-      <div className="flex items-center gap-1.5 overflow-x-auto bg-white p-1.5 rounded-2xl border border-slate-200 shadow-xs text-xs font-semibold">
-        {[
-          { id: 'store', label: 'Thông tin cửa hàng', icon: Store },
-          { id: 'bank', label: 'Tài khoản VietQR', icon: CreditCard },
-          { id: 'printers', label: 'Máy in WiFi/LAN', icon: Printer },
-          { id: 'backup', label: 'Sao lưu dữ liệu', icon: Database },
-          { id: 'audit', label: 'Nhật ký hệ thống', icon: History },
-        ].map((tab) => {
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all cursor-pointer ${
-                activeTab === tab.id
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
-      </div>
 
+        {/* 3. Phần Tabs */}
+        <div className="flex items-center gap-1.5 overflow-x-auto bg-white p-1.5 rounded-2xl border border-slate-200 shadow-xs text-xs font-semibold mt-4">
+          {[
+            { id: 'store', label: 'Thông tin cửa hàng', icon: Store },
+            { id: 'bank', label: 'Tài khoản VietQR', icon: CreditCard },
+            { id: 'printers', label: 'Máy in WIFI/LAN', icon: Printer },
+            { id: 'backup', label: 'Sao lưu dữ liệu', icon: Database },
+            { id: 'audit', label: 'Nhật ký hệ thống', icon: History },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all cursor-pointer select-none ${
+                  activeTab === tab.id
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+      </div>
+    </div>
+  );
+};
       {/* Tab: Store Info */}
       {activeTab === 'store' && (
         <form onSubmit={handleSaveStore} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4 text-xs">
