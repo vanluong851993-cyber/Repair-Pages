@@ -17,8 +17,6 @@ export const initialUsers: User[] = [
   { id: 'usr-1', username: 'admin', name: 'Nguyễn Văn Lượng (Admin)', role: 'admin', phone: '0789324445' },
     { id: 'usr-5', username: 'cashier_mai', name: 'Ngô Cao Thuỷ Nguyên (Thu Ngân)', role: 'cashier', phone: '0981005162' },
   ];
-
-export const initialCustomers: Customer[] = [
 export const initialProducts: Product[] = [
   {
     id: 'sp-001',
